@@ -73,7 +73,7 @@ Running `terraform apply` from the root directory, as is, will build a new VPC w
 | branch | The branch for CodePipeline to begin building when a commit is detected. | `string` | `null` | yes |
 | pipeline_deployment_bucket_name | Name of the S3 bucket that will store CodePipeline artifacts | `string` | `null` | yes |
 | codepipeline_role_name | The role name for CodePipeline IAM role | `string` | `null` | yes |
-| codepipeline_policy_name | The policy for the CodePipeline IAM policiy | `string` | `null` | no |
+| codepipeline_policy_name | The policy for the CodePipeline IAM policiy | `string` | `null` | yes |
 | account_type | Human readable name of the targets accounts | `string` | `null` | yes |
 
 ## Outputs
