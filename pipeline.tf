@@ -9,6 +9,7 @@ module "codebuild" {
   #codebuild_source_repository = module.codecommit.codecommit_url
   vpc_id              = module.vpc.vpc_id
   subnet_c_arn        = module.vpc.subnet_c_arn
+  subnet_a_id         = module.vpc.subnet_a_id
   subnet_c_id         = module.vpc.subnet_c_id
   security_group_id   = module.vpc.security_group_id
   git_repository_name = module.codecommit.repository_name

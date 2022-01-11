@@ -106,7 +106,7 @@ POLICY
 resource "aws_codebuild_project" "packer_build" {
   name          = "packer_build"
   description   = "test_codebuild_project"
-  build_timeout = "10"
+  build_timeout = "15"
   service_role  = aws_iam_role.packer_codebuild.arn
 
   artifacts {
@@ -136,7 +136,7 @@ resource "aws_codebuild_project" "packer_build" {
 
     environment_variable {
       name  = "BUILD_SUBNET_ID"
-      value = var.subnet_c_id
+      value = var.subnet_a_id
     }
 
   }
