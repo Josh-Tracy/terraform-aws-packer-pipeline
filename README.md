@@ -1,0 +1,1 @@
+- subnets must be private with NATGW routing to outside sources 

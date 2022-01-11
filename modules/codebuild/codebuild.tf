@@ -1,6 +1,24 @@
 resource "aws_s3_bucket" "packer_artifacts" {
-  bucket = "terraform_packer_artifacts"
+  bucket = "terraform-packer-artifacts"
   acl    = "private"
+  server_side_encryption_configuration {
+    rule {
+      apply_server_side_encryption_by_default {
+        sse_algorithm = "aws:kms"
+      }
+    }
+  }
+}
+
+
+resource "aws_iam_role_policy_attachment" "codebuild_codecommit" {
+  role       = aws_iam_role.packer_codebuild.name
+  policy_arn = "arn:aws:iam::aws:policy/AWSCodeCommitReadOnly"
+}
+
+resource "aws_iam_role_policy_attachment" "codebuild_deploy" {
+  role       = aws_iam_role.packer_codebuild.name
+  policy_arn = "arn:aws:iam::aws:policy/AdministratorAccess"
 }
 
 resource "aws_iam_role" "packer_codebuild" {
@@ -59,13 +77,12 @@ resource "aws_iam_role_policy" "packer_codebuild" {
         "ec2:CreateNetworkInterfacePermission"
       ],
       "Resource": [
-        "arn:aws:ec2:us-east-1:123456789012:network-interface/*"
+        "*"
       ],
       "Condition": {
         "StringEquals": {
           "ec2:Subnet": [
-            "${var.subnet_a_arn}",
-            "${var.subnet_b_arn}"
+            "${var.subnet_c_arn}"
           ],
           "ec2:AuthorizedService": "codebuild.amazonaws.com"
         }
@@ -89,11 +106,11 @@ POLICY
 resource "aws_codebuild_project" "packer_build" {
   name          = "packer_build"
   description   = "test_codebuild_project"
-  build_timeout = "5"
+  build_timeout = "10"
   service_role  = aws_iam_role.packer_codebuild.arn
 
   artifacts {
-    type = "NO_ARTIFACTS"
+    type = "CODEPIPELINE"
   }
 
   cache {
@@ -108,15 +125,20 @@ resource "aws_codebuild_project" "packer_build" {
     image_pull_credentials_type = "CODEBUILD"
 
     environment_variable {
-      name  = "SOME_KEY1"
-      value = "SOME_VALUE1"
+      name  = "BUILD_OUTPUT_BUCKET"
+      value = aws_s3_bucket.packer_artifacts.bucket
     }
 
     environment_variable {
-      name  = "SOME_KEY2"
-      value = "SOME_VALUE2"
-      type  = "PARAMETER_STORE"
+      name  = "BUILD_VPC_ID"
+      value = var.vpc_id
     }
+
+    environment_variable {
+      name  = "BUILD_SUBNET_ID"
+      value = var.subnet_c_id
+    }
+
   }
 
   logs_config {
@@ -132,29 +154,21 @@ resource "aws_codebuild_project" "packer_build" {
   }
 
   source {
-    type            = "CODECOMMIT"
-    location        = var.codebuild_source_repository
-    git_clone_depth = 1
+    type            = "CODEPIPELINE"
+    buildspec       = "buildspec.yml"
 
-    git_submodules_config {
-      fetch_submodules = true
-    }
+
   }
 
-  source_version = "master"
 
   vpc_config {
     vpc_id = var.vpc_id
 
     subnets = [
-      var.subnet_a_id,
-      var.subnet_b_id,
+      var.subnet_c_id
     ]
 
-    security_group_ids = [
-      aws_security_group.example1.id,
-      aws_security_group.example2.id,
-    ]
+    security_group_ids = var.security_group_id
   }
 
   tags = {

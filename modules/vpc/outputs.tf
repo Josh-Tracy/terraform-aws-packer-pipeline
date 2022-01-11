@@ -22,10 +22,18 @@ output "subnet_c_id" {
 value = "${aws_subnet.subnet_c.id}"
 }
 
+output "subnet_c_arn" {
+value = "${aws_subnet.subnet_c.arn}"
+}
+
 output "public_subnets"{
 value = [aws_subnet.subnet_a.id, aws_subnet.subnet_b.id]
 }
 
 output "private_subnets"{
 value = [aws_subnet.subnet_c.id]
+}
+
+output "security_group_id"{
+value = [aws_security_group.packer_build.id]
 }

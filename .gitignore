@@ -1,0 +1,15 @@
+.terraform.lock.hcl
+.terraform
+terraform.tfstate
+terraform.tfstate.backup
+.git
+Web Instances.pem
+Internal Instances.pem
+remote_state/.terraform
+remote_state/.terraform.lock.hcl
+remote_state/terraform.tfstate
+remote_state/terraform.tfstate.backup
+bootstrap/accounts/.terraform
+bootstrap/accounts/.terraform.lock.hcl
+bootstrap/accounts/terraform.tfstate
+bootstrap/accounts/terraform.tfstate.backup
