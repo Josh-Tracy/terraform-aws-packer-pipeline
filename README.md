@@ -4,12 +4,12 @@
 # Scenario 1: Creating a new VPC with this code
 Running `terraform apply` from the root directory, as is, will build a new VPC with 2 public subnets that auto assign public IPs, 1 private subnet, an IGW and a NATGW. If you choose to use an existing VPC, continue to scenario 2.
 
-1.) terraform plan, apply, and stuff
-2.) Clone the CodeCommit repo you created from the HTTPS URL
-3.) Create a dev branch, fill it with this ___ code
-4.) Commit
-5.) Build will start
-4.)?
+1. terraform plan, apply, and stuff
+2. Clone the CodeCommit repo you created from the HTTPS URL
+3. Create a dev branch, fill it with this ___ code
+4. Commit
+5. Build will start
+6. ?
 
 # Scenario 2: Using with an existing VPC
 
