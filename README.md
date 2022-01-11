@@ -4,12 +4,16 @@
 # Scenario 1: Creating a new VPC with this code
 Running `terraform apply` from the root directory, as is, will build a new VPC with 2 public subnets that auto assign public IPs, 1 private subnet, an IGW and a NATGW. If you choose to use an existing VPC, continue to scenario 2.
 
-1. terraform plan, apply, and stuff
-2. Clone the CodeCommit repo you created from the HTTPS URL
-3. Create a dev branch, fill it with this ___ code
-4. Commit
-5. Build will start
-6. ?
+1. Clone this repository and fill in your values in `vpc.tf` and `pipeline.tf`
+2. From the root directory of this project, type `terraform init`, `terraform plan`, and then `terraform apply`
+3. Upon successful creation of the resources, verify you have a CodeCommit repo, CodeBuild project, and CodePipeline.
+4. Copy the CodeCommit HTTPS URL from the output of the terraform apply command, or from the CodeCommit console.
+5. Git clone the project to your local host. This will require your CodeCommit credentials from AWS.
+6. You will be warned that you have cloned an empty repository. This is normal. Copy the contents of this project: https://github.com/Josh-Tracy/terraform-aws-packer-configurations to the empty one you just cloned.
+7. Create a branch named after the branch that CodePipeline is watching `git checkout -b dev`
+8. `git add .` then `git commit -m "test"` then `git push --set-upstream origin dev`. You will be prompted for your AWS CodeCommit credentials again.
+9. 
+
 
 # Scenario 2: Using with an existing VPC
 
