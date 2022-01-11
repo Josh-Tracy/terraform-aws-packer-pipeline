@@ -6,7 +6,6 @@ module "codecommit" {
 
 module "codebuild" {
   source = "./modules/codebuild"
-  #codebuild_source_repository = module.codecommit.codecommit_url
   vpc_id              = module.vpc.vpc_id
   subnet_c_arn        = module.vpc.subnet_c_arn
   subnet_a_id         = module.vpc.subnet_a_id
