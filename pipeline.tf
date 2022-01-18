@@ -5,7 +5,7 @@ module "codecommit" {
 }
 
 module "codebuild" {
-  source = "./modules/codebuild"
+  source              = "./modules/codebuild"
   vpc_id              = module.vpc.vpc_id
   subnet_c_arn        = module.vpc.subnet_c_arn
   subnet_a_id         = module.vpc.subnet_a_id
@@ -23,4 +23,8 @@ module "codepipeline" {
   codepipeline_policy_name        = "codepipeline-packer-ami-build"
   codebuild_project_name          = module.codebuild.codebuild_project_name
   account_type                    = "390262997527"
+}
+
+module "alerts" {
+  source = "./modules/alerts"
 }

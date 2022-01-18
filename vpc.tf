@@ -22,7 +22,7 @@ module "vpc" {
   subnet_a_routetable_cidr       = "0.0.0.0/0"                 # Route Table for subnet A CIDR
   subnet_b_routetable_cidr       = "0.0.0.0/0"                 # Route Table for subnet B CIDR
   subnet_c_routetable_cidr       = "0.0.0.0/0"                 # Route Table for subnet C CIDR
-  sg_name_https                  = "allow http https and ssh"               # Name of this security group
+  sg_name_https                  = "allow http https and ssh"  # Name of this security group
   ssh_ingress_rule_description   = "Allow SSH from anywhere"   # SSH ingress rule description
   ssh_from_port                  = 22                          # SSH port
   ssh_to_port                    = 22                          # SSh port
