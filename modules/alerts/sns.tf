@@ -1,29 +1,14 @@
 # Add SNS topic subscription
 resource "aws_sns_topic" "build_updates" {
-  name = "build-updates"
+  name = var.sns_topic_name
 }
 
-resource "aws_cloudwatch_event_rule" "build" {
-  name        = "build-complete"
-  description = "Alert on status of Packer pipeline"
-
-  event_pattern = <<EOF
-{
-  "detail-type": [
-    "AmiBuilder"
-  ],
-  "source": [
-    "com.ami.builder"
-  ]
-}
-EOF
+resource "aws_sns_topic_subscription" "email-target" {
+  topic_arn = aws_sns_topic.build_updates.arn
+  protocol  = "email"
+  endpoint  = var.email_address
 }
 
-resource "aws_cloudwatch_event_target" "sns" {
-  rule      = aws_cloudwatch_event_rule.build.name
-  target_id = "SendToSNS"
-  arn       = aws_sns_topic.build_updates.arn
-}
 
 resource "aws_sns_topic_policy" "default" {
   arn    = aws_sns_topic.build_updates.arn
