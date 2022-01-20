@@ -6,16 +6,22 @@ Running `terraform apply` from the root directory, as is, will build a new VPC w
 
 1. Clone this repository and fill in your values in `vpc.tf` and `pipeline.tf`
 2. From the root directory of this project, type `terraform init`, `terraform plan`, and then `terraform apply`
-3. Upon successful creation of the resources, verify you have a CodeCommit repo, CodeBuild project, and CodePipeline.
-4. Copy the CodeCommit HTTPS URL from the output of the terraform apply command, or from the CodeCommit console.
-5. Git clone the project to your local host. This will require your CodeCommit credentials from AWS.
-6. You will be warned that you have cloned an empty repository. This is normal. Copy the contents of this project: https://github.com/Josh-Tracy/terraform-aws-packer-configurations to the empty one you just cloned.
+3. Upon successful creation of the resources, verify you have a CodeCommit repo, CodeBuild project, and CodePipeline. 4. You should also recieve a confirmation email at the email address you used for the `email_address` variable. You are required to confirm the SNS topic subscription to recieve build alerts for this pipeline. Confirm it upon a successful terraform apply. 
+5. Copy the CodeCommit HTTPS URL from the output of the terraform apply command, or from the CodeCommit console.
+6. Git clone the project to your local host. This may require your CodeCommit credentials from AWS.
+7. You will be warned that you have cloned an empty repository. This is normal. Copy the contents of this project: https://github.com/Josh-Tracy/terraform-aws-packer-configurations to the empty one you just cloned.
 7. Create a branch named after the branch that CodePipeline is watching `git checkout -b dev`
-8. `git add .` then `git commit -m "test"` then `git push --set-upstream origin dev`. You will be prompted for your AWS CodeCommit credentials again.
-9. 
+8. `git add .` then `git commit -m "test"` then `git push --set-upstream origin dev`. You may be prompted for your AWS CodeCommit credentials again.
+9. Once the commit is pushed, you should see a build running under CodeBuild.
+10. Upon completion of the build, you should recieve an alert to the email address you chose for the `email_address` variable.
+
+Congratulations! You have just created a CI/CD pipeline for updating AMIs on AWS. The concept for future updates to AMIs is the same. You have a pipeline watching a repository branch for a commit, which triggers a build, and in turn uploads artifacts to S3 and a new AMI while alerting devs and admins. 
 
 
 # Scenario 2: Using with an existing VPC
+If you have an existing VPC, you will need to import the VPC ID, and any other resource ids, arns, names, etc. that you do not want to create from scratch. To do so use the terraform import command where needed using the format below:
+
+- `terraform import aws_vpc.vpc <vpc_id>` aws_vpc.vpc references the vpc resource defined in the vpc module, while `<vpc_id>` should be replaced with your existing VPC-ID. 
 
 ## Requirements
 

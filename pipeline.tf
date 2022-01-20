@@ -28,5 +28,5 @@ module "codepipeline" {
 module "alerts" {
   source = "./modules/alerts"
   sns_topic_name = "AMI-Build-Status"
-  email_address = 
+  email_address = "email.example.com"
 }
