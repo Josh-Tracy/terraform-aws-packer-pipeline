@@ -104,9 +104,9 @@ POLICY
 }
 
 resource "aws_codebuild_project" "packer_build" {
-  name          = "packer_build"
-  description   = "test_codebuild_project"
-  build_timeout = "15"
+  name          = var.codebuild_project_name
+  description   = var.codebuild_project_description
+  build_timeout = var.build_timeout
   service_role  = aws_iam_role.packer_codebuild.arn
 
   artifacts {
@@ -119,10 +119,10 @@ resource "aws_codebuild_project" "packer_build" {
   }
 
   environment {
-    compute_type                = "BUILD_GENERAL1_SMALL"
-    image                       = "aws/codebuild/ubuntu-base:14.04"
-    type                        = "LINUX_CONTAINER"
-    image_pull_credentials_type = "CODEBUILD"
+    compute_type                = var.compute_type
+    image                       = var.image
+    type                        = var.type
+    image_pull_credentials_type = var.image_pull_credentials_type
 
     environment_variable {
       name  = "BUILD_OUTPUT_BUCKET"
@@ -155,7 +155,7 @@ resource "aws_codebuild_project" "packer_build" {
 
   source {
     type            = "CODEPIPELINE"
-    buildspec       = "buildspec.yml"
+    buildspec       = var.buildspec_path
 
 
   }
