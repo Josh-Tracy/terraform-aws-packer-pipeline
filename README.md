@@ -1,4 +1,6 @@
 ### Work In Progress
+## Workflow
+![workflow](./images/workflow.jpg)
 ## Instructions 
 
 # Scenario 1: Creating a new VPC with this code
@@ -6,7 +8,8 @@ Running `terraform apply` from the root directory, as is, will build a new VPC w
 
 1. Clone this repository and fill in your values in `vpc.tf` and `pipeline.tf`
 2. From the root directory of this project, type `terraform init`, `terraform plan`, and then `terraform apply`
-3. Upon successful creation of the resources, verify you have a CodeCommit repo, CodeBuild project, and CodePipeline. 4. You should also recieve a confirmation email at the email address you used for the `email_address` variable. You are required to confirm the SNS topic subscription to recieve build alerts for this pipeline. Confirm it upon a successful terraform apply. 
+3. Upon successful creation of the resources, verify you have a CodeCommit repo, CodeBuild project, and CodePipeline.
+4. You should also recieve a confirmation email at the email address you used for the `email_address` variable. You are required to confirm the SNS topic subscription to recieve build alerts for this pipeline. Confirm it upon a successful terraform apply. 
 5. Copy the CodeCommit HTTPS URL from the output of the terraform apply command, or from the CodeCommit console.
 6. Git clone the project to your local host. This may require your CodeCommit credentials from AWS.
 7. You will be warned that you have cloned an empty repository. This is normal. Copy the contents of this project: https://github.com/Josh-Tracy/terraform-aws-packer-configurations to the empty one you just cloned.
