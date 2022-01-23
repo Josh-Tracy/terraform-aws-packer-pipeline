@@ -88,6 +88,14 @@ If you have an existing VPC, you will need to import the VPC ID, and any other r
 | codepipeline_role_name | The role name for CodePipeline IAM role | `string` | `null` | yes |
 | codepipeline_policy_name | The policy for the CodePipeline IAM policiy | `string` | `null` | yes |
 | account_type | Human readable name of the targets accounts | `string` | `null` | yes |
+| build_timeout | Time in minutes that the build will stop regardless of status | `string` | `null` | yes |
+| codebuild_project_name | Name for the CodeBuild project | `string` | `null` | yes |
+| codebuild_project_description | Description for the CodeBuild project | `string` | `null` | yes |
+| image_pull_credentials_type | Type of credentials used to pull the container image for CodeBuild | `string` | `null` | yes |
+| buildspec_path | Path inside the CodeCommit repo to the buildspec.yml file | `string` | `null` | yes |
+| compute_type | Size of the compute instance | `string` | `null` | yes |
+| type | Type of builder for CodeBuild to use | `string` | `null` | yes |
+| image | Image for CodeBuild to use | `string` | `null` | yes |
 
 ## Outputs
 
