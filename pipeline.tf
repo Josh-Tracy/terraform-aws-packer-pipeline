@@ -36,5 +36,5 @@ module "codepipeline" {
 module "alerts" {
   source         = "./modules/alerts"
   sns_topic_name = "AMI-Build-Status"
-  email_address  = "joshua.m.tracy.5@gmail.com"
+  email_address  = "email@example.com"
 }
