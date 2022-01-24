@@ -8,7 +8,7 @@ module "codebuild" {
   source                        = "./modules/codebuild"
   image                         = "aws/codebuild/ubuntu-base:14.04"
   type                          = "LINUX_CONTAINER"
-  compute_type                  = "BUILD_GENERAL_1_SMALL"
+  compute_type                  = "BUILD_GENERAL1_SMALL"
   buildspec_path                = "buildspec.yml"
   image_pull_credentials_type   = "CODEBUILD"
   codebuild_project_name        = "Packer-AMI-Creation"
@@ -36,5 +36,5 @@ module "codepipeline" {
 module "alerts" {
   source         = "./modules/alerts"
   sns_topic_name = "AMI-Build-Status"
-  email_address  = "email.example.com"
+  email_address  = "joshua.m.tracy.5@gmail.com"
 }
