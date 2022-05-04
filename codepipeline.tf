@@ -1,36 +1,35 @@
-resource "aws_s3_bucket" "codepipeline_bucket" {
-  bucket = "${var.pipeline_deployment_bucket_name}-codepipeline"
-  acl    = "private"
+resource "aws_s3_bucket" "codepipeline" {
+  bucket = "${var.friendly_name_prefix}-codepipeline"
+}
 
-  server_side_encryption_configuration {
-    rule {
-      apply_server_side_encryption_by_default {
-        sse_algorithm = "aws:kms"
-      }
+resource "aws_s3_bucket_acl" "codepipeline" {
+  bucket = aws_s3_bucket.codepipeline.id
+  acl    = "private"
+}
+
+resource "aws_s3_bucket_versioning" "codepipeline" {
+  bucket = aws_s3_bucket.codepipeline.id
+  versioning_configuration {
+    status = "Enabled"
+  }
+}
+
+resource "aws_s3_bucket_server_side_encryption_configuration" "codepipeline" {
+  bucket = aws_s3_bucket.codepipeline.bucket
+
+  rule {
+    apply_server_side_encryption_by_default {
+      sse_algorithm = "aws:kms"
     }
   }
-
-  # Needed for CloudWatch
-  versioning {
-    enabled = true
-  }
-
 }
 
-resource "aws_s3_bucket_public_access_block" "pipeline_buckets" {
-  bucket                  = aws_s3_bucket.codepipeline_bucket.bucket
-  block_public_acls       = true
-  block_public_policy     = true
-  ignore_public_acls      = true
-  restrict_public_buckets = true
-
-}
 resource "aws_codepipeline" "codepipeline" {
-  name     = var.git_repository_name
+  name     = "${var.friendly_name_prefix}-pipeline"
   role_arn = aws_iam_role.codepipeline_role.arn
 
   artifact_store {
-    location = aws_s3_bucket.codepipeline_bucket.bucket
+    location = aws_s3_bucket.codepipeline.bucket
     type     = "S3"
   }
 
@@ -38,7 +37,7 @@ resource "aws_codepipeline" "codepipeline" {
     name = "Source"
 
     action {
-      name             = "Source-${var.git_repository_name}"
+      name             = "Source-${aws_codecommit_repository.packer.repository_name}"
       category         = "Source"
       owner            = "AWS"
       provider         = "CodeCommit"
@@ -46,7 +45,7 @@ resource "aws_codepipeline" "codepipeline" {
       output_artifacts = ["source_output"]
 
       configuration = {
-        RepositoryName = var.git_repository_name
+        RepositoryName = aws_codecommit_repository.packer.repository_name
         BranchName     = var.branch
       }
     }
@@ -66,22 +65,22 @@ resource "aws_codepipeline" "codepipeline" {
       output_artifacts = ["build_output"]
 
       configuration = {
-        ProjectName = var.codebuild_project_name
+        ProjectName = aws_codebuild_project.packer-build.name
         EnvironmentVariables = jsonencode([{
           name  = "ENVIRONMENT"
           value = "test"
           },
           {
             name  = "PROJECT_NAME"
-            value = var.account_type
+            #value = var.account_type
         }])
       }
     }
   }
 }
 
-resource "aws_iam_role" "codepipeline_role" {
-  name = var.codepipeline_role_name
+resource "aws_iam_role" "codepipeline-role" {
+  name = "CodepipelineS3andCodebuildAccess"
 
   assume_role_policy = <<EOF
 {
@@ -99,17 +98,17 @@ resource "aws_iam_role" "codepipeline_role" {
 EOF
 }
 
-resource "aws_iam_role_policy" "codepipeline_policy" {
-  name = var.codepipeline_policy_name
-  role = aws_iam_role.codepipeline_role.id
+resource "aws_iam_role_policy" "codepipeline-policy" {
+  name = "CodepipelineS3andCodebuildAccess"
+  role = aws_iam_role.codepipeline-role.id
 
   policy = templatefile("${path.module}/templates/codepipeline-role-policy.json.tpl", {
-    codepipeline_bucket_arn = aws_s3_bucket.codepipeline_bucket.arn
+    codepipeline-bucket_arn = aws_s3_bucket.codepipeline.arn
   })
 
 }
 
-resource "aws_iam_role_policy_attachment" "codepipeline_codecommit" {
+resource "aws_iam_role_policy_attachment" "codepipeline-codecommit" {
   role       = aws_iam_role.codepipeline_role.name
   policy_arn = "arn:aws:iam::aws:policy/AWSCodeCommitFullAccess"
 }

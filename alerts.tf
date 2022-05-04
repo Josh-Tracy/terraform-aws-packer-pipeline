@@ -3,7 +3,7 @@
 #----------------------------------------------------#
 resource "aws_cloudwatch_event_rule" "build" {
   name        = "build-complete"
-  description = "Alert on status of Packer pipeline"
+  description = "Alert on status of pipeline"
 
   event_pattern = <<EOF
 {

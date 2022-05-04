@@ -2,14 +2,17 @@
 # vpc config
 #----------------------------------------------------#
 resource "aws_vpc" "vpc" {
+  count      = var.create_vpc == true ? 1 : 0
   cidr_block = var.vpc_cidr_block
 
   tags = {
-    Name = var.vpc_name
+    Name = "${var.friendly_name_prefix}-${var.vpc_name}"
   }
 }
 
 resource "aws_subnet" "subnet_a" {
+  count = var.create_vpc == true ? 1 : 0
+
   vpc_id                  = aws_vpc.vpc.id
   cidr_block              = var.subnet_a_cidr
   availability_zone       = var.subnet_a_az
@@ -21,6 +24,8 @@ resource "aws_subnet" "subnet_a" {
 }
 
 resource "aws_subnet" "subnet_b" {
+  count = var.create_vpc == true ? 1 : 0
+
   vpc_id                  = aws_vpc.vpc.id
   cidr_block              = var.subnet_b_cidr
   availability_zone       = var.subnet_b_az
@@ -32,6 +37,8 @@ resource "aws_subnet" "subnet_b" {
 }
 
 resource "aws_subnet" "subnet_c" {
+  count = var.create_vpc == true ? 1 : 0
+
   vpc_id                  = aws_vpc.vpc.id
   cidr_block              = var.subnet_c_cidr
   availability_zone       = var.subnet_c_az
@@ -47,6 +54,8 @@ resource "aws_subnet" "subnet_c" {
 #----------------------------------------------------#
 
 resource "aws_route_table" "subnet_a" {
+  count = var.create_vpc == true ? 1 : 0
+
   vpc_id = aws_vpc.vpc.id
 
   route {
@@ -60,6 +69,8 @@ resource "aws_route_table" "subnet_a" {
 }
 
 resource "aws_route_table" "subnet_b" {
+  count = var.create_vpc == true ? 1 : 0
+
   vpc_id = aws_vpc.vpc.id
 
   route {
@@ -73,10 +84,12 @@ resource "aws_route_table" "subnet_b" {
 }
 
 resource "aws_route_table" "subnet_c" {
+  count = var.create_vpc == true ? 1 : 0
+
   vpc_id = aws_vpc.vpc.id
 
   route {
-    cidr_block = var.subnet_c_routetable_cidr
+    cidr_block     = var.subnet_c_routetable_cidr
     nat_gateway_id = aws_nat_gateway.natgw.id
   }
 
@@ -86,17 +99,23 @@ resource "aws_route_table" "subnet_c" {
 }
 
 resource "aws_route_table_association" "subnet_a" {
+  count = var.create_vpc == true ? 1 : 0
+
   subnet_id      = aws_subnet.subnet_a.id
   route_table_id = aws_route_table.subnet_a.id
 }
 
 resource "aws_route_table_association" "subnet_b" {
+  count = var.create_vpc == true ? 1 : 0
+
   subnet_id      = aws_subnet.subnet_b.id
   route_table_id = aws_route_table.subnet_b.id
 }
 
 
 resource "aws_route_table_association" "subnet_c" {
+  count = var.create_vpc == true ? 1 : 0
+
   subnet_id      = aws_subnet.subnet_c.id
   route_table_id = aws_route_table.subnet_c.id
 }
@@ -106,10 +125,14 @@ resource "aws_route_table_association" "subnet_c" {
 #----------------------------------------------------#
 
 resource "aws_eip" "natgw_eip" {
+  count = var.create_vpc == true ? 1 : 0
+
   vpc = true
 }
 
 resource "aws_nat_gateway" "natgw" {
+  count = var.create_vpc == true ? 1 : 0
+
   allocation_id = aws_eip.natgw_eip.id
   subnet_id     = aws_subnet.subnet_a.id
 
@@ -118,13 +141,15 @@ resource "aws_nat_gateway" "natgw" {
   }
 
   depends_on = [
-	  aws_internet_gateway.igw,
-	  aws_eip.natgw_eip,
-	  aws_subnet.subnet_a
-	  ]
+    aws_internet_gateway.igw,
+    aws_eip.natgw_eip,
+    aws_subnet.subnet_a
+  ]
 }
 
 resource "aws_internet_gateway" "igw" {
+  count = var.create_vpc == true ? 1 : 0
+
   vpc_id = aws_vpc.vpc.id
 
   tags = {
@@ -135,33 +160,20 @@ resource "aws_internet_gateway" "igw" {
 #----------------------------------------------------#
 # Security group config
 #----------------------------------------------------#
-resource "aws_security_group" "packer_build" {
-  name        = "allow_web_ssh"
-  description = "Allow https http and ssh from anywhere and ssh internal the VPC CIDR"
-  vpc_id      = aws_vpc.vpc.id
+resource "aws_security_group" "codebuild" {
 
-  ingress {
-    description = var.https_ingress_rule_description
-    from_port   = var.https_from_port
-    to_port     = var.https_to_port
-    protocol    = "tcp"
-    cidr_blocks = var.ingress_https_cidr
-  }
+  name        = "${var.friendly_prefix_name}-ingress-ports"
+  description = "Securirty group for the AWS Codebuild builds"
+  vpc_id      = var.create_vpc == true ? aws_vpc.vpc.id : var.vpc_id
 
-  ingress {
-    description = var.http_ingress_rule_description
-    from_port   = var.http_from_port
-    to_port     = var.http_to_port
-    protocol    = "tcp"
-    cidr_blocks = var.ingress_http_cidr
-  }
-
-  ingress {
-    description = var.ssh_ingress_rule_description
-    from_port   = var.ssh_from_port
-    to_port     = var.ssh_to_port
-    protocol    = "tcp"
-    cidr_blocks = var.ingress_ssh_cidr
+  dynamic "ingress" {
+    for_each = var.ingress_ports
+    content {
+      from_port   = ingress.value
+      to_port     = element(var.ingress_ports, index(var.ingress_ports, ingress.value))
+      protocol    = "tcp"
+      cidr_blocks = var.ingress_allowed_cidr
+    }
   }
 
   egress {
@@ -173,6 +185,6 @@ resource "aws_security_group" "packer_build" {
   }
 
   tags = {
-    Name = var.sg_name_https
+    Name = "Codepipeline Permitted Ports"
   }
 }

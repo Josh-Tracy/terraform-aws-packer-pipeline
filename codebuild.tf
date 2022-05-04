@@ -1,4 +1,4 @@
-resource "aws_s3_bucket" "packer_artifacts" {
+resource "aws_s3_bucket" "packer-artifacts" {
   bucket = "terraform-packer-artifacts"
   acl    = "private"
   server_side_encryption_configuration {
@@ -11,17 +11,17 @@ resource "aws_s3_bucket" "packer_artifacts" {
 }
 
 
-resource "aws_iam_role_policy_attachment" "codebuild_codecommit" {
-  role       = aws_iam_role.packer_codebuild.name
+resource "aws_iam_role_policy_attachment" "codebuild-codecommit" {
+  role       = aws_iam_role.packer-codebuild.name
   policy_arn = "arn:aws:iam::aws:policy/AWSCodeCommitReadOnly"
 }
 
 resource "aws_iam_role_policy_attachment" "codebuild_deploy" {
-  role       = aws_iam_role.packer_codebuild.name
+  role       = aws_iam_role.packer-codebuild.name
   policy_arn = "arn:aws:iam::aws:policy/AdministratorAccess"
 }
 
-resource "aws_iam_role" "packer_codebuild" {
+resource "aws_iam_role" "packer-codebuild" {
   name = "codebuild"
 
   assume_role_policy = <<EOF
@@ -40,8 +40,8 @@ resource "aws_iam_role" "packer_codebuild" {
 EOF
 }
 
-resource "aws_iam_role_policy" "packer_codebuild" {
-  role = aws_iam_role.packer_codebuild.name
+resource "aws_iam_role_policy" "packer-codebuild" {
+  role = aws_iam_role.packer-codebuild.name
 
   policy = <<POLICY
 {
@@ -94,8 +94,8 @@ resource "aws_iam_role_policy" "packer_codebuild" {
         "s3:*"
       ],
       "Resource": [
-        "${aws_s3_bucket.packer_artifacts.arn}",
-        "${aws_s3_bucket.packer_artifacts.arn}/*"
+        "${aws_s3_bucket.packer-artifacts.arn}",
+        "${aws_s3_bucket.packer-artifacts.arn}/*"
       ]
     }
   ]
@@ -103,7 +103,7 @@ resource "aws_iam_role_policy" "packer_codebuild" {
 POLICY
 }
 
-resource "aws_codebuild_project" "packer_build" {
+resource "aws_codebuild_project" "packer-build" {
   name          = var.codebuild_project_name
   description   = var.codebuild_project_description
   build_timeout = var.build_timeout
@@ -115,7 +115,7 @@ resource "aws_codebuild_project" "packer_build" {
 
   cache {
     type     = "S3"
-    location = aws_s3_bucket.packer_artifacts.bucket
+    location = aws_s3_bucket.packer-artifacts.bucket
   }
 
   environment {
@@ -126,17 +126,17 @@ resource "aws_codebuild_project" "packer_build" {
 
     environment_variable {
       name  = "BUILD_OUTPUT_BUCKET"
-      value = aws_s3_bucket.packer_artifacts.bucket
+      value = aws_s3_bucket.packer-artifacts.bucket
     }
 
     environment_variable {
       name  = "BUILD_VPC_ID"
-      value = var.vpc_id
+      value = var.create_vpc == true ? aws_vpc.vpc.id : var.vpc_id
     }
 
     environment_variable {
       name  = "BUILD_SUBNET_ID"
-      value = var.subnet_a_id
+      value = var.create_vpc == true ? aws_subnet.subnet_a.id : var.build_subnet_id
     }
 
   }
@@ -149,26 +149,27 @@ resource "aws_codebuild_project" "packer_build" {
 
     s3_logs {
       status   = "ENABLED"
-      location = "${aws_s3_bucket.packer_artifacts.id}/build-log"
+      location = "${aws_s3_bucket.packer-artifacts.id}/build-log"
     }
   }
 
   source {
-    type            = "CODEPIPELINE"
-    buildspec       = var.buildspec_path
+    type      = "CODEPIPELINE"
+    buildspec = var.buildspec_path
 
 
   }
 
 
   vpc_config {
-    vpc_id = var.vpc_id
-
+    # ID of the VPC within which to run builds
+    vpc_id = var.create_vpc == true ? aws_vpc.vpc.id : var.vpc_id
+    # Subnet IDs within which to run builds
     subnets = [
-      var.subnet_c_id
+      var.create_vpc == true ? aws_subnet.subnet_c.id : var.build_subnet_id
     ]
-
-    security_group_ids = var.security_group_id
+    # Security group IDs to assign to running builds
+    security_group_ids = aws_security_group.codebuild.id
   }
 
   tags = {
