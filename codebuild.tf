@@ -1,11 +1,28 @@
+locals {
+  ec2_subnet = (var.create_vpc == true ? aws_subnet.subnet_c[0].arn : var.subnet_c_arn )
+}
+
 resource "aws_s3_bucket" "packer-artifacts" {
   bucket = "terraform-packer-artifacts"
+}
+resource "aws_s3_bucket_acl" "packer-artifacts" {
+  bucket = aws_s3_bucket.packer-artifacts.id
   acl    = "private"
-  server_side_encryption_configuration {
-    rule {
-      apply_server_side_encryption_by_default {
-        sse_algorithm = "aws:kms"
-      }
+}
+
+resource "aws_s3_bucket_versioning" "packer-artifacts" {
+  bucket = aws_s3_bucket.packer-artifacts.id
+  versioning_configuration {
+    status = "Enabled"
+  }
+}
+
+resource "aws_s3_bucket_server_side_encryption_configuration" "packer-artifacts" {
+  bucket = aws_s3_bucket.packer-artifacts.bucket
+
+  rule {
+    apply_server_side_encryption_by_default {
+      sse_algorithm = "aws:kms"
     }
   }
 }
@@ -82,7 +99,7 @@ resource "aws_iam_role_policy" "packer-codebuild" {
       "Condition": {
         "StringEquals": {
           "ec2:Subnet": [
-            "${var.subnet_c_arn}"
+            "${local.ec2_subnet}"
           ],
           "ec2:AuthorizedService": "codebuild.amazonaws.com"
         }
@@ -107,7 +124,7 @@ resource "aws_codebuild_project" "packer-build" {
   name          = var.codebuild_project_name
   description   = var.codebuild_project_description
   build_timeout = var.build_timeout
-  service_role  = aws_iam_role.packer_codebuild.arn
+  service_role  = aws_iam_role.packer-codebuild.arn
 
   artifacts {
     type = "CODEPIPELINE"
@@ -131,12 +148,12 @@ resource "aws_codebuild_project" "packer-build" {
 
     environment_variable {
       name  = "BUILD_VPC_ID"
-      value = var.create_vpc == true ? aws_vpc.vpc.id : var.vpc_id
+      value = var.create_vpc == true ? aws_vpc.vpc[0].id : var.vpc_id
     }
 
     environment_variable {
       name  = "BUILD_SUBNET_ID"
-      value = var.create_vpc == true ? aws_subnet.subnet_a.id : var.build_subnet_id
+      value = var.create_vpc == true ? aws_subnet.subnet_a[0].id : var.build_subnet_id
     }
 
   }
@@ -163,17 +180,13 @@ resource "aws_codebuild_project" "packer-build" {
 
   vpc_config {
     # ID of the VPC within which to run builds
-    vpc_id = var.create_vpc == true ? aws_vpc.vpc.id : var.vpc_id
+    vpc_id = var.create_vpc == true ? aws_vpc.vpc[0].id : var.vpc_id
     # Subnet IDs within which to run builds
     subnets = [
-      var.create_vpc == true ? aws_subnet.subnet_c.id : var.build_subnet_id
+      var.create_vpc == true ? aws_subnet.subnet_c[0].id : var.build_subnet_id
     ]
     # Security group IDs to assign to running builds
-    security_group_ids = aws_security_group.codebuild.id
-  }
-
-  tags = {
-    Environment = "Test"
+    security_group_ids = [aws_security_group.codebuild.id]
   }
 }
 

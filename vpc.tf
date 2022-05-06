@@ -3,6 +3,7 @@
 #----------------------------------------------------#
 resource "aws_vpc" "vpc" {
   count      = var.create_vpc == true ? 1 : 0
+  
   cidr_block = var.vpc_cidr_block
 
   tags = {
@@ -13,7 +14,7 @@ resource "aws_vpc" "vpc" {
 resource "aws_subnet" "subnet_a" {
   count = var.create_vpc == true ? 1 : 0
 
-  vpc_id                  = aws_vpc.vpc.id
+  vpc_id                  = aws_vpc.vpc[0].id
   cidr_block              = var.subnet_a_cidr
   availability_zone       = var.subnet_a_az
   map_public_ip_on_launch = true
@@ -26,7 +27,7 @@ resource "aws_subnet" "subnet_a" {
 resource "aws_subnet" "subnet_b" {
   count = var.create_vpc == true ? 1 : 0
 
-  vpc_id                  = aws_vpc.vpc.id
+  vpc_id                  = aws_vpc.vpc[0].id
   cidr_block              = var.subnet_b_cidr
   availability_zone       = var.subnet_b_az
   map_public_ip_on_launch = true
@@ -39,7 +40,7 @@ resource "aws_subnet" "subnet_b" {
 resource "aws_subnet" "subnet_c" {
   count = var.create_vpc == true ? 1 : 0
 
-  vpc_id                  = aws_vpc.vpc.id
+  vpc_id                  = aws_vpc.vpc[0].id
   cidr_block              = var.subnet_c_cidr
   availability_zone       = var.subnet_c_az
   map_public_ip_on_launch = false
@@ -56,11 +57,11 @@ resource "aws_subnet" "subnet_c" {
 resource "aws_route_table" "subnet_a" {
   count = var.create_vpc == true ? 1 : 0
 
-  vpc_id = aws_vpc.vpc.id
+  vpc_id = aws_vpc.vpc[0].id
 
   route {
     cidr_block = var.subnet_a_routetable_cidr
-    gateway_id = aws_internet_gateway.igw.id
+    gateway_id = aws_internet_gateway.igw[0].id
   }
 
   tags = {
@@ -71,11 +72,11 @@ resource "aws_route_table" "subnet_a" {
 resource "aws_route_table" "subnet_b" {
   count = var.create_vpc == true ? 1 : 0
 
-  vpc_id = aws_vpc.vpc.id
+  vpc_id = aws_vpc.vpc[0].id
 
   route {
     cidr_block = var.subnet_b_routetable_cidr
-    gateway_id = aws_internet_gateway.igw.id
+    gateway_id = aws_internet_gateway.igw[0].id
   }
 
   tags = {
@@ -86,11 +87,11 @@ resource "aws_route_table" "subnet_b" {
 resource "aws_route_table" "subnet_c" {
   count = var.create_vpc == true ? 1 : 0
 
-  vpc_id = aws_vpc.vpc.id
+  vpc_id = aws_vpc.vpc[0].id
 
   route {
     cidr_block     = var.subnet_c_routetable_cidr
-    nat_gateway_id = aws_nat_gateway.natgw.id
+    nat_gateway_id = aws_nat_gateway.natgw[0].id
   }
 
   tags = {
@@ -101,23 +102,23 @@ resource "aws_route_table" "subnet_c" {
 resource "aws_route_table_association" "subnet_a" {
   count = var.create_vpc == true ? 1 : 0
 
-  subnet_id      = aws_subnet.subnet_a.id
-  route_table_id = aws_route_table.subnet_a.id
+  subnet_id      = aws_subnet.subnet_a[0].id
+  route_table_id = aws_route_table.subnet_a[0].id
 }
 
 resource "aws_route_table_association" "subnet_b" {
   count = var.create_vpc == true ? 1 : 0
 
-  subnet_id      = aws_subnet.subnet_b.id
-  route_table_id = aws_route_table.subnet_b.id
+  subnet_id      = aws_subnet.subnet_b[0].id
+  route_table_id = aws_route_table.subnet_b[0].id
 }
 
 
 resource "aws_route_table_association" "subnet_c" {
   count = var.create_vpc == true ? 1 : 0
 
-  subnet_id      = aws_subnet.subnet_c.id
-  route_table_id = aws_route_table.subnet_c.id
+  subnet_id      = aws_subnet.subnet_c[0].id
+  route_table_id = aws_route_table.subnet_c[0].id
 }
 
 #----------------------------------------------------#
@@ -133,8 +134,8 @@ resource "aws_eip" "natgw_eip" {
 resource "aws_nat_gateway" "natgw" {
   count = var.create_vpc == true ? 1 : 0
 
-  allocation_id = aws_eip.natgw_eip.id
-  subnet_id     = aws_subnet.subnet_a.id
+  allocation_id = aws_eip.natgw_eip[0].id
+  subnet_id     = aws_subnet.subnet_a[0].id
 
   tags = {
     Name = var.natgw_tag_name
@@ -150,7 +151,7 @@ resource "aws_nat_gateway" "natgw" {
 resource "aws_internet_gateway" "igw" {
   count = var.create_vpc == true ? 1 : 0
 
-  vpc_id = aws_vpc.vpc.id
+  vpc_id = aws_vpc.vpc[0].id
 
   tags = {
     Name = var.igw_tag_name
@@ -162,9 +163,9 @@ resource "aws_internet_gateway" "igw" {
 #----------------------------------------------------#
 resource "aws_security_group" "codebuild" {
 
-  name        = "${var.friendly_prefix_name}-ingress-ports"
+  name        = "${var.friendly_name_prefix}-ingress-ports"
   description = "Securirty group for the AWS Codebuild builds"
-  vpc_id      = var.create_vpc == true ? aws_vpc.vpc.id : var.vpc_id
+  vpc_id      = var.create_vpc == true ? aws_vpc.vpc[0].id : var.vpc_id
 
   dynamic "ingress" {
     for_each = var.ingress_ports

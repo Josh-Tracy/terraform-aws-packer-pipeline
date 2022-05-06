@@ -26,7 +26,7 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "codepipeline" {
 
 resource "aws_codepipeline" "codepipeline" {
   name     = "${var.friendly_name_prefix}-pipeline"
-  role_arn = aws_iam_role.codepipeline_role.arn
+  role_arn = aws_iam_role.codepipeline-role.arn
 
   artifact_store {
     location = aws_s3_bucket.codepipeline.bucket
@@ -103,12 +103,12 @@ resource "aws_iam_role_policy" "codepipeline-policy" {
   role = aws_iam_role.codepipeline-role.id
 
   policy = templatefile("${path.module}/templates/codepipeline-role-policy.json.tpl", {
-    codepipeline-bucket_arn = aws_s3_bucket.codepipeline.arn
+    codepipeline_bucket_arn = aws_s3_bucket.codepipeline.arn
   })
 
 }
 
 resource "aws_iam_role_policy_attachment" "codepipeline-codecommit" {
-  role       = aws_iam_role.codepipeline_role.name
+  role       = aws_iam_role.codepipeline-role.name
   policy_arn = "arn:aws:iam::aws:policy/AWSCodeCommitFullAccess"
 }

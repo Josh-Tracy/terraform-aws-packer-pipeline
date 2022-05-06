@@ -1,164 +1,160 @@
 #----------------------------------------------------#
+# Common Vars
+#----------------------------------------------------#
+variable "friendly_name_prefix" {
+  type        = string
+  description = "Friendly name prefix for unique resource naming across deployments."
+
+  validation {
+    condition     = can(regex("^[[:alnum:]]+$", var.friendly_name_prefix)) && length(var.friendly_name_prefix) < 13
+    error_message = "Must only contain alphanumeric characters and be less than 13 characters."
+  }
+}
+
+variable "region" {
+  type        = string
+  description = "Region to deploy resources into"
+  default     = "us-east-1"
+}
+#----------------------------------------------------#
 # VPC vars
 #----------------------------------------------------#
+
+variable "create_vpc" {
+  description = "Option to create and deploy pipeline into new VPC and subnets, or use existing one"
+  type        = bool
+  default     = true
+}
 variable "vpc_cidr_block" {
   description = "CIDR block of the VPC"
   type        = string
+  default = "10.10.10.0/24"
+}
+
+variable "vpc_id" {
+  description = "VPC ID of an existing VPC to deploy pipeline into"
+  type        = string
+  default     = null
 }
 
 variable "vpc_name" {
   description = "Name tag for the VPC"
   type        = string
+  default     = "pipeline-vpc"
 }
 
 variable "subnet_a_cidr" {
   description = "CIDR block size for subnet A"
   type        = string
+  default = "10.10.10.128/26"
 }
 
 variable "subnet_a_az" {
   description = "availability zone for subnet A"
   type        = string
+  default = "us-east-1a"
 }
 
 variable "public_subnet_a_name" {
   description = "Name tag for public subnet A"
   type        = string
+  default = "Public subnet A"
 }
 
 variable "subnet_b_cidr" {
   description = "CIDR block size for subnet B"
   type        = string
+  default = "10.10.10.192/26"
 }
 
 variable "subnet_b_az" {
   description = "availability zone for subnet B"
   type        = string
+  default = "us-east-1b"
 }
 
 variable "public_subnet_b_name" {
   description = "Name tag for public subnet B"
   type        = string
+  default = "Public subnet B"
 }
 
 variable "subnet_c_cidr" {
   description = "CIDR block size for subnet C"
   type        = string
+  default = "10.10.10.0/25"
 }
 
 variable "subnet_c_az" {
   description = "availability zone for subnet C"
   type        = string
+  default = "us-east-1c"
 }
 
 variable "private_subnet_c_name" {
   description = "Name tag for public subnet C"
   type        = string
+  default = "Private subnet C"
 }
 
 variable "igw_tag_name" {
   description = "Name tag internet gateway"
   type        = string
+  default = "pipeline-vpc-igw"
 }
 
 variable "natgw_tag_name" {
   description = "Name tag nat  gateway"
   type        = string
+  default = "pipeline-vpc-natgw"
 }
 
 variable "subnet_a_routetable_tag_name" {
   description = "Name tag for subnet a routetable"
   type        = string
+  default = "Public subnet A routes"
 }
 
 variable "subnet_b_routetable_tag_name" {
   description = "Name tag for subnet b routetable"
   type        = string
+  default = "Public subnet B routes"
 }
 
 variable "subnet_c_routetable_tag_name" {
   description = "Name tag for subnet c routetable"
   type        = string
+  default = "Private subnet C routes"
 }
 
 variable "subnet_a_routetable_cidr" {
   description = "CIDR of traffic for route table"
   type        = string
+  default = "0.0.0.0/0"
 }
 
 variable "subnet_b_routetable_cidr" {
   description = "CIDR of traffic for route table"
   type        = string
+  default = "0.0.0.0/0"
 }
 
 variable "subnet_c_routetable_cidr" {
   description = "CIDR of traffic for route table"
   type        = string
+  default = "0.0.0.0/0"
 }
 
-variable "sg_name_https" {
-  description = "Name tag for security group that allows https"
-  type        = string
+variable "ingress_ports" {
+    description = "Ingress ports permitted for the codebuild security group"
+    type = list
+    default = [22, 443, 80]
 }
 
-variable "ingress_http_cidr" {
-  description = "CIDR block of traffic allowed over http"
-  type        = list
-}
-
-variable "http_ingress_rule_description" {
-  description = "Description of http ingress rule"
-  type        = string
-}
-
-variable "http_from_port" {
-  description = "port to allow http ingress from"
-  type        = number
-}
-
-variable "http_to_port" {
-  description = "port to allow http ingress to"
-  type        = number
-}
-
-variable "ingress_ssh_cidr" {
-  description = "CIDR block of traffic allowed over ssh"
-  type        = list
-}
-
-variable "ingress_https_cidr" {
-  description = "CIDR block of traffic allowed over https"
-  type        = list
-}
-
-variable "https_ingress_rule_description" {
-  description = "Description of https ingress rule"
-  type        = string
-}
-
-variable "https_from_port" {
-  description = "port to allow https ingress from"
-  type        = number
-}
-
-variable "https_to_port" {
-  description = "port to allow https ingress to"
-  type        = number
-}
-
-variable "ssh_ingress_rule_description" {
-  description = "Description of ssh ingress rule"
-  type        = string
-}
-
-variable "ssh_from_port" {
-  description = "port to allow ssh ingress from"
-  type        = number
-}
-
-variable "ssh_to_port" {
-  description = "port to allow ssh ingress to"
-  type        = number
+variable "ingress_allowed_cidr" {
+    description = "CIDR to allow ingress from"
+    type = list(string)
+    default = ["0.0.0.0/0"]
 }
 
 #----------------------------------------------------#
@@ -170,29 +166,10 @@ variable "branch" {
   type        = string
 }
 
-variable "git_repository_name" {}
-
-variable "codebuild_project_name" {}
-
-variable "account_type" {
-  description = "Human readable name of the targets accounts"
-  type        = string
-}
-
-variable "pipeline_deployment_bucket_name" {
-  description = "Bucket used by codepipeline and codebuild to store artifacts regarding the deployment"
-  type        = string
-}
-
-variable "codepipeline_role_name" {
-  description = "Name of the codepipeline role"
-  type        = string
-}
-
-variable "codepipeline_policy_name" {
-  description = "Name of the codepipeline policy"
-  type        = string
-}
+# variable "account_type" {
+#   description = "Human readable name of the targets accounts"
+#   type        = string
+# }
 
 #----------------------------------------------------#
 # Code Commit Vars
@@ -201,11 +178,13 @@ variable "codepipeline_policy_name" {
 variable "codecommit_repository_name" {
   description = "Name of a codecommit respository"
   type        = string
+  default     = "packer-configuration"
 }
 
 variable "codecommit_repository_description" {
   description = "Description of the codecommit respository"
   type        = string
+  default     = "Configurations to be applied by packer during the image build"
 }
 
 #----------------------------------------------------#
@@ -254,17 +233,6 @@ variable "codebuild_project_description" {
   type        = string
 }
 
-variable "vpc_id" {}
-
-variable "subnet_c_arn" {}
-
-variable "subnet_c_id" {}
-
-variable "subnet_a_id" {}
-
-variable "security_group_id" {}
-
-variable "git_repository_name" {}
 
 #----------------------------------------------------#
 # Alerts (SNS/Cloudwatch events) Vars

@@ -1,8 +1,8 @@
 terraform {
   required_providers {
-    azurerm = {
+    aws = {
       source  = "hashicorp/aws"
-      version = "~> 2.99.0"
+      version = "~> 4.0"
     }
   }
 }
@@ -63,6 +63,6 @@ module "packer-pipeline" {
  # account_type                    = "390262997527"
 
 # --- Alerts --- #
-  sns_topic_name = "AMI-Build-Status"
-  email_address  = "email@example.com"
+  sns_topic_name = var.sns_topic_name
+  email_address  = var.email_address
 }

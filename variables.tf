@@ -166,14 +166,10 @@ variable "branch" {
   type        = string
 }
 
-variable "git_repository_name" {}
-
-variable "codebuild_project_name" {}
-
-variable "account_type" {
-  description = "Human readable name of the targets accounts"
-  type        = string
-}
+# variable "account_type" {
+#   description = "Human readable name of the targets accounts"
+#   type        = string
+# }
 
 #----------------------------------------------------#
 # Code Commit Vars
@@ -237,17 +233,18 @@ variable "codebuild_project_description" {
   type        = string
 }
 
-variable "vpc_id" {}
+variable "build_subnet_id" {
+  description = "Subnet that codebuild will run builds within"
+  type        = string
+  default = ""
+}
 
-variable "subnet_c_arn" {}
+variable "subnet_c_arn" {
+  description = "Prviate subnet arn"
+  type        = string
+  default = ""
+}
 
-variable "subnet_c_id" {}
-
-variable "subnet_a_id" {}
-
-variable "security_group_id" {}
-
-variable "git_repository_name" {}
 
 #----------------------------------------------------#
 # Alerts (SNS/Cloudwatch events) Vars
